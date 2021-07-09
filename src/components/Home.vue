@@ -13,8 +13,14 @@
             <!-- 侧边栏 isCollapse为true就是折叠菜单栏，就缩小width的值  -->
             <el-aside :width="isCollapse ? '64px' :'200px'">
                 <div class="toggle-button" @click="toggleCollapse">|||</div>
-                <!-- 侧边栏菜单栏区域 unique-opened每次只能点开一个菜单栏 collapse属性是element的属性，水平折叠菜单栏，点击的时候改变他的值，collapse-transition也是element属性，意思是关闭折叠动画 -->
-                <el-menu background-color="#333744" text-color="#fff" active-text-color="#409FFF" unique-opened  :collapse="isCollapse" :collapse-transition="false">
+                <!-- 侧边栏菜单栏区域
+                    unique-opened每次只能点开一个菜单栏
+                    collapse属性是element的属性，水平折叠菜单栏，点击的时候改变他的值，
+                    collapse-transition也是element属性，意思是关闭折叠动画
+                    router element中的属性，开启菜单栏的路由功能，并以菜单中index属性作为路由地址
+                    default-active
+                -->
+                <el-menu background-color="#333744" text-color="#fff" active-text-color="#409FFF" unique-opened  :collapse="isCollapse" :collapse-transition="false" router>
                     <!-- 一级菜单  -->
                     <el-submenu :index="item.id+''" v-for="item in menuList" :key="item.id">
                          <!-- 一级菜单的模板区域 -->
@@ -24,7 +30,7 @@
                             <span>{{item.authName}}</span>
                         </template>
                          <!-- 二级菜单  :index 数据动态绑定，并设定唯一的id值，防止点击对应菜单全部一起展开 -->
-                        <el-menu-item :index="subItem.id+''" v-for="subItem in item.children" :key="subItem.id">
+                        <el-menu-item :index="'/'+subItem.path" v-for="subItem in item.children" :key="subItem.id">
                              <!-- 二级菜单的模板区域 -->
                             <template slot="title">
                                 <i class="el-icon-menu"></i>
@@ -35,7 +41,7 @@
                 </el-menu>
             </el-aside>
             <!-- 右侧内容主体 -->
-            <el-main>Main</el-main>
+            <el-main><router-view></router-view></el-main>
         </el-container>
     </el-container>
 </template>
