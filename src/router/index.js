@@ -3,6 +3,8 @@ import VueRouter from 'vue-router'
 // 路由懒加载
 const Login = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/Login.vue')
 const Home = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/Home.vue')
+const Welcome = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/Welcome.vue')
+const Users = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/user/users.vue')
 
 Vue.use(VueRouter)
 
@@ -10,7 +12,15 @@ const routes = [
   // 重定向
   { path: '/', redirect: '/login' },
   { path: '/login', component: Login },
-  { path: '/home', component: Home }
+  {
+    path: '/home',
+    component: Home,
+    redirect: '/welcome',
+    children: [{
+      path: '/welcome', component: Welcome
+    }, { path: '/users', component: Users }
+    ]
+  }
 ]
 
 const router = new VueRouter({

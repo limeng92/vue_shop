@@ -18,9 +18,15 @@
                     collapse属性是element的属性，水平折叠菜单栏，点击的时候改变他的值，
                     collapse-transition也是element属性，意思是关闭折叠动画
                     router element中的属性，开启菜单栏的路由功能，并以菜单中index属性作为路由地址
-                    default-active
+                    default-active 菜单高亮属性，值就是我们路由地址，点击谁，就把对应的地址赋值给他
                 -->
-                <el-menu background-color="#333744" text-color="#fff" active-text-color="#409FFF" unique-opened  :collapse="isCollapse" :collapse-transition="false" router>
+                <el-menu background-color="#333744" text-color="#fff" active-text-color="#409FFF"
+                unique-opened
+                :collapse="isCollapse"
+                :collapse-transition="false"
+                router
+                :default-active="activePath"
+                >
                     <!-- 一级菜单  -->
                     <el-submenu :index="item.id+''" v-for="item in menuList" :key="item.id">
                          <!-- 一级菜单的模板区域 -->
@@ -30,7 +36,7 @@
                             <span>{{item.authName}}</span>
                         </template>
                          <!-- 二级菜单  :index 数据动态绑定，并设定唯一的id值，防止点击对应菜单全部一起展开 -->
-                        <el-menu-item :index="'/'+subItem.path" v-for="subItem in item.children" :key="subItem.id">
+                        <el-menu-item :index="'/'+subItem.path" v-for="subItem in item.children" :key="subItem.id" @click="saveNavState('/' + subItem.path)">
                              <!-- 二级菜单的模板区域 -->
                             <template slot="title">
                                 <i class="el-icon-menu"></i>
@@ -60,12 +66,16 @@ export default {
         145: 'iconfont icon-baobiao'
       },
       // 默认不折叠
-      isCollapse: false
+      isCollapse: false,
+      // 被激活导航地址
+      activePath: ''
     }
   },
-  //   生命周期函数，就是在渲染成页面前执行
+  //   生命周期函数，就是在渲染或者创建页面前就会执行
   created () {
     this.getMenuList()
+    // 在页面刷新的时候需要将session中需要高亮的菜单路由地址取出来赋值给变量
+    this.activePath = window.sessionStorage.getItem('activePath')
   },
   methods: {
     // 退出登录
@@ -85,6 +95,12 @@ export default {
     // 菜单的折叠与展开
     toggleCollapse () {
       this.isCollapse = !this.isCollapse
+    },
+    // 保存连接的激活地址 点击的时候需要将路由地址，赋值给激活的高亮变量，
+    // 并且还要存到session中，因为页面刷新的时候，需要从session中取值目前需要高亮的菜单路由地址，赋值给activePath变量
+    saveNavState (activePath) {
+      this.activePath = activePath
+      window.sessionStorage.setItem('activePath', activePath)
     }
   }
 }
