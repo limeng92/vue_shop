@@ -15,11 +15,15 @@ const routes = [
   {
     path: '/home',
     component: Home,
+    // 只要进入到/home路径就会从定向到/welcome路径下，加载子页面welcome页面,因为需要再home页面的主体部分展示子页面所以需要再home页面的主体块需要添加一个路由定位符来展示重定向的子页面
     redirect: '/welcome',
-    children: [{
-      path: '/welcome', component: Welcome
-    }, { path: '/users', component: Users }
-    ]
+    children: [{ // 访问home路径加载子路径 children下面都是home的子路径，因为先加载home才能加载下面的子页面
+      path: '/welcome',
+      component: Welcome
+    }, {
+      path: '/users',
+      component: Users
+    }]
   }
 ]
 
