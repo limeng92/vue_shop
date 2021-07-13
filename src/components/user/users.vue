@@ -113,7 +113,7 @@
         </el-dialog>
 
         <!-- 修改用户区域 -->
-        <el-dialog title="修改用户信息" :visible.sync="editDialogVisible" width="50%">
+        <el-dialog title="修改用户信息" :visible.sync="editDialogVisible" width="50%" @close="editDialogClosed">
             <el-form :model="editUserForm" :rules="editUserFormRules" ref="editUserFormRef" label-width="70px">
                 <el-form-item label="用户名" prop="username">
                     <el-input v-model="editUserForm.username" disabled></el-input>
@@ -127,7 +127,7 @@
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="editDialogVisible = false">确 定</el-button>
+                <el-button type="primary" @click="editUser">确 定</el-button>
             </span>
         </el-dialog>
   </div>
@@ -281,8 +281,38 @@ export default {
       var url = '/users/' + id
       const { data: res } = await this.$http.get(url)
       if (res.meta.status !== 200) return this.$message.error('查询用户信息失败！')
+      // 将查询的数据赋值给初始化的修改表单对象
       this.editUserForm = res.data
+      // 显示表单
       this.editDialogVisible = true
+    },
+    // 监听修改表单关闭事件
+    editDialogClosed () {
+      // 重置表单数据
+      this.$refs.editUserFormRef.resetFields()
+    },
+    // 修改用户信息
+    editUser () {
+      // 提交请求前，表单预验证
+      this.$refs.editUserFormRef.validate(async valid => {
+        // console.log(valid)
+        // 表单预校验失败
+        if (!valid) return
+        const { data: res } = await this.$http.put(
+          'users/' + this.editUserForm.id,
+          {
+            email: this.editUserForm.email,
+            mobile: this.editUserForm.mobile
+          }
+        )
+        if (res.meta.status !== 200) {
+          this.$message.error('更新用户信息失败！')
+        }
+        // 隐藏添加用户对话框
+        this.editDialogVisible = false
+        this.$message.success('更新用户信息成功！')
+        this.getUserList()
+      })
     }
   }
 }
