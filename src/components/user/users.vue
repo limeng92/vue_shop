@@ -57,7 +57,7 @@
                         -->
                         <el-button type="primary" icon="el-icon-edit" size=mini @click="showEditDialog(scope.row.id)"></el-button>
                         <!-- 删除按钮 -->
-                        <el-button type="danger" icon="el-icon-delete" size=mini></el-button>
+                        <el-button type="danger" icon="el-icon-delete" size=mini @click="removeUserById(scope.row.id)"></el-button>
                         <!--分配角色按钮
                             tooltip 按钮提示语
                             enterable element 属性，用来控制鼠标移开后提示语消失
@@ -311,8 +311,30 @@ export default {
         // 隐藏添加用户对话框
         this.editDialogVisible = false
         this.$message.success('更新用户信息成功！')
+        // 重新获取列表数据
         this.getUserList()
       })
+    },
+    // 删除按钮事件
+    async removeUserById (id) {
+      const confirmResult = await this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).catch(error => {
+        return error
+      })
+      // 点击确定 返回值为：confirm
+      // 点击取消 返回值为： cancel
+      //   console.log(confirmResult)
+      if (confirmResult !== 'confirm') {
+        return this.$message.info('已取消删除')
+      }
+      // 发起请求删除用户
+      const { data: res } = await this.$http.delete('users/' + id)
+      if (res.meta.status !== 200) return this.$message.error('删除用户失败！')
+      this.$message.success('删除用户成功！')
+      this.getUserList()
     }
   }
 }

@@ -4,7 +4,7 @@ import VueRouter from 'vue-router'
 const Login = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/Login.vue')
 const Home = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/Home.vue')
 const Welcome = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/Welcome.vue')
-const Users = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/user/users.vue')
+const Users = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/user/Users.vue')
 
 Vue.use(VueRouter)
 
