@@ -5,7 +5,8 @@ const Login = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../comp
 const Home = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/Home.vue')
 const Welcome = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/Welcome.vue')
 const Users = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/user/Users.vue')
-
+const Rights = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/power/Rights.vue')
+const Roles = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/power/Roles.vue')
 Vue.use(VueRouter)
 
 const routes = [
@@ -23,6 +24,12 @@ const routes = [
     }, {
       path: '/users',
       component: Users
+    }, {
+      path: '/rights',
+      component: Rights
+    }, {
+      path: '/roles',
+      component: Roles
     }]
   }
 ]
