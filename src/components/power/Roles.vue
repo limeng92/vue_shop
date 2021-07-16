@@ -24,7 +24,7 @@
                         <el-row :class="['bdbottom', i1===0 ? 'bdtop':'','vcenter']" v-for="(item1,i1) in scope.row.children" :key="item1.id">
                             <!-- 一级权限展示 -->
                             <el-col :span="5">
-                                <el-tag>{{item1.authName}}</el-tag>
+                                <el-tag closable @close="removeRightById(scope.row, item1.id)">{{item1.authName}}</el-tag>
                                 <i class="el-icon-caret-right"></i>
                             </el-col>
                             <!-- 二级和第三级展示 -->
@@ -33,7 +33,7 @@
                                 <el-row :class="[i2===0 ? '':'bdtop','vcenter']" v-for="(item2,i2) in item1.children" :key="item2.id">
                                     <!-- 二级渲染区域 -->
                                     <el-col :span="6">
-                                        <el-tag type="success" closable>{{item2.authName}}</el-tag>
+                                        <el-tag type="success" closable @close="removeRightById(scope.row, item2.id)">{{item2.authName}}</el-tag>
                                         <i class="el-icon-caret-right"></i>
                                     </el-col>
                                     <!-- 三级渲染区域 -->
@@ -53,7 +53,7 @@
                         <template slot-scope="scope">
                             <el-button type="primary" icon="el-icon-edit" size=mini  @click="showEditDialog(scope.row.id)">编辑</el-button>
                             <el-button type="danger" icon="el-icon-delete" size=mini @click="removeRoleById(scope.row.id)">删除</el-button>
-                            <el-button type="warning" icon="el-icon-setting" size=mini>分配权限</el-button>
+                            <el-button type="warning" icon="el-icon-setting" size=mini  @click="showSetRightDialog(scope.row)">分配权限</el-button>
                         </template>
                     </el-table-column>
             </el-table>
@@ -93,6 +93,17 @@
         </span>
         </el-dialog>
 
+        <!-- 分配权限对话框 -->
+        <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%" @close="setRightDialogClosed">
+            <!--分配权限树形区域 props 树形结构数据对象 show-checkbox复选框  default-expand-all默认进入展开所有-->
+            <el-tree :data="rightsList" :props="treeProps" show-checkbox node-key="id" default-expand-all  :default-checked-keys="defKeys"></el-tree>
+            <!-- 底部按钮区域 -->
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="addRoleDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="addRole">确 定</el-button>
+            </span>
+        </el-dialog>
+
     </div>
 </template>
 <script>
@@ -101,17 +112,28 @@ export default {
     return {
     // 角色列表数据
       rolesList: [],
+      // 分配权限，权限列表
+      rightsList: [],
       // 添加表单显示隐藏
       addRoleDialogVisible: false,
       // 编辑表单显示隐藏
       editRoleDialogVisible: false,
+      // 设置权限分配表单显示隐藏
+      setRightDialogVisible: false,
       // 添加角色表单对象数据
       addRoleForm: {
         roleName: '',
         roleDesc: ''
       },
+      // 分配权限，权限列表树形结构需要展示的数据 label 展示的文本字段名，children 以什么字段名来关联树形结构
+      treeProps: {
+        label: 'authName',
+        children: 'children'
+      },
       // 编辑角色表单对象数据
       editRoleForm: {},
+      // 权限分配tree中默认选中节点ID值
+      defKeys: [],
       // 添加角色表单验证规则
       RoleFormRules: {
         roleName: [{
@@ -240,6 +262,37 @@ export default {
       if (res.meta.status !== 200) return this.$message.error('删除角色失败！')
       this.$message.success('删除用户成功！')
       this.getRolesList()
+    },
+    // 点击分配权限按钮事件
+    async showSetRightDialog (role) {
+      // 获取角色的所有权限
+      const { data: res } = await this.$http.get('rights/tree')
+      if (res.meta.status !== 200) {
+        return this.$message.error('获取权限数据失败！')
+      }
+      //   获取权限树
+      this.rightsList = res.data
+      //   递归获取三级节点的id
+      this.getLeafkeys(role, this.defKeys)
+      //   显示弹框
+      this.setRightDialogVisible = true
+    },
+    // 通过递归 获取角色下三级权限的 id, 并保存到defKeys数组
+    getLeafkeys (node, arr) {
+      // 没有children属性，则是三级节点
+      if (!node.children) {
+        return arr.push(node.id)
+      }
+      // 递归，自己调自己，这里循环node.children也就是二级权限数据，item 就是二级数据对象，然后调用自己本方法，
+      // 并把二级对象塞给if，用二级对象的下级数据来做判断，if拿到二级对象数据，取出children来进行判断 也就是三级对象，因三级对象没有children，
+      node.children.forEach(item => {
+        // console.log(item)
+        this.getLeafkeys(item, arr)
+      })
+    },
+    // 权限对话框关闭事件
+    setRightDialogClosed () {
+      this.defKeys = []
     }
   }
 }
