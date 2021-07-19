@@ -95,12 +95,12 @@
 
         <!-- 分配权限对话框 -->
         <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%" @close="setRightDialogClosed">
-            <!--分配权限树形区域 props 树形结构数据对象 show-checkbox复选框  default-expand-all默认进入展开所有-->
-            <el-tree :data="rightsList" :props="treeProps" show-checkbox node-key="id" default-expand-all  :default-checked-keys="defKeys"></el-tree>
+            <!--分配权限树形区域 props 树形结构数据对象 show-checkbox复选框  default-expand-all默认进入展开所有 ref属性获取整个树形结构数据对象，并调用方法来对数据进行操作-->
+            <el-tree :data="rightsList" :props="treeProps" ref="treeRef" show-checkbox node-key="id" default-expand-all  :default-checked-keys="defKeys"></el-tree>
             <!-- 底部按钮区域 -->
             <span slot="footer" class="dialog-footer">
-                <el-button @click="addRoleDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="addRole">确 定</el-button>
+                <el-button @click="setRightDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="allotRights">确 定</el-button>
             </span>
         </el-dialog>
 
@@ -134,6 +134,8 @@ export default {
       editRoleForm: {},
       // 权限分配tree中默认选中节点ID值
       defKeys: [],
+      // 需要被分配权限的角色id
+      roleId: '',
       // 添加角色表单验证规则
       RoleFormRules: {
         roleName: [{
@@ -265,6 +267,7 @@ export default {
     },
     // 点击分配权限按钮事件
     async showSetRightDialog (role) {
+      this.roleId = role.id
       // 获取角色的所有权限
       const { data: res } = await this.$http.get('rights/tree')
       if (res.meta.status !== 200) {
@@ -290,9 +293,26 @@ export default {
         this.getLeafkeys(item, arr)
       })
     },
-    // 权限对话框关闭事件
+    // 分配 权限对话框关闭事件
     setRightDialogClosed () {
       this.defKeys = []
+    },
+    // 分配权限对话框里的确认按钮事件
+    async allotRights () {
+      // 获取树状结构中全选和半选的id号，放到数组中 ...扩展运算符 将数组中的数据直接取出来独立出来。
+      const keys = [
+        ...this.$refs.treeRef.getCheckedKeys(),
+        ...this.$refs.treeRef.getHalfCheckedKeys()
+      ]
+      // 将数组拼接成字符串
+      const idStr = keys.join(',')
+      const { data: res } = await this.$http.post(`roles/${this.roleId}/rights`, { rids: idStr })
+      if (res.meta.status !== 200) { return this.$message.error('分配权限失败！') }
+      this.$message.success('分配权限成功!')
+      // 重新更新数据
+      this.getRolesList()
+      // 关闭对话框
+      this.setRightDialogVisible = false
     }
   }
 }

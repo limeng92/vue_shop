@@ -63,7 +63,7 @@
                             enterable element 属性，用来控制鼠标移开后提示语消失
                         -->
                         <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
-                            <el-button type="warning" icon="el-icon-setting" size=mini></el-button>
+                            <el-button type="warning" icon="el-icon-setting" size=mini @click="showSetRole(scope.row)"></el-button>
                         </el-tooltip>
                     </template>
                 </el-table-column>
@@ -90,7 +90,7 @@
 
         <!-- 添加用户区域 addDialogVisible用来控制显示和隐藏 close关闭时触发事件 -->
         <el-dialog title="添加用户" :visible.sync="addDialogVisible" width="50%" @close="addDialogClosed">
-            <!-- 添加用户表单区域 model表单数据绑定 rules表单验证规则 ref重置表单 -->
+            <!-- 添加用户表单区域 model表单数据绑定 rules表单验证规则 ref属性 获取整个表单的数据结构然后调用方法可以重置表单 -->
             <el-form :model="addUserForm" :rules="addUserFormRules" ref="addUserFormRef" label-width="70px">
                 <el-form-item label="用户名" prop="username">
                     <el-input v-model="addUserForm.username"></el-input>
@@ -130,6 +130,26 @@
                 <el-button type="primary" @click="editUser">确 定</el-button>
             </span>
         </el-dialog>
+
+        <!-- 分配角色区域 -->
+        <el-dialog title="分配角色" :visible.sync="setRoleDialogVisible" width="50%" @close="setRoleDialogClosed">
+          <p>当前用户：{{userInfo.username}}</p>
+          <p>当前角色：{{userInfo.role_name}}</p>
+          <p> 分配角色：
+              <el-select v-model="selectRoleId" placeholder="请选择">
+                <el-option
+                  v-for="item in rolesLsit"
+                  :key="item.id"
+                  :label="item.roleName"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+          </p>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
+          </span>
+        </el-dialog>
   </div>
 </template>
 <script>
@@ -163,7 +183,9 @@ export default {
         // 每页显示多少数据
         pagesize: 2
       },
+      // 用户列表数据对象
       userlist: [],
+      // 总数据
       total: 0,
       //   是每页显示几条的select选项
       PageSelectedData: [1, 2, 5, 10, 20],
@@ -205,6 +227,7 @@ export default {
           validator: checkMobile, trigger: 'blur'
         }]
       },
+      // 显示隐藏修改用户对话框
       editDialogVisible: false,
       // 根据id查询的用户信息
       editUserForm: {},
@@ -220,7 +243,15 @@ export default {
         }, {
           validator: checkMobile, trigger: 'blur'
         }]
-      }
+      },
+      // 分配角色对话框
+      setRoleDialogVisible: false,
+      // 当前需要被分配角色的用户
+      userInfo: {},
+      // 所有角色数据列表
+      rolesLsit: [],
+      // 已选中的角色Id值
+      selectRoleId: ''
     }
   },
   created () {
@@ -335,6 +366,35 @@ export default {
       if (res.meta.status !== 200) return this.$message.error('删除用户失败！')
       this.$message.success('删除用户成功！')
       this.getUserList()
+    },
+    // 点击分配角色按钮事触发的事件对话框
+    async showSetRole (role) {
+      this.userInfo = role
+      // 展示对话框之前，获取所有角色列表
+      const { data: res } = await this.$http.get('roles')
+      if (res.meta.status !== 200) {
+        return this.$message.error('获取角色列表失败！')
+      }
+      // 将查询到的所有的角色列表数据绑定到初始化好的变量上
+      this.rolesLsit = res.data
+      // 将对话框显示出来
+      this.setRoleDialogVisible = true
+    },
+    // 分配角色框里的确认按钮事件
+    async saveRoleInfo () {
+      if (!this.selectRoleId) return this.$message.error('请选择需要分配的角色!')
+      const { data: res } = await this.$http.put(`users/${this.userInfo.id}/role`, { rid: this.selectRoleId })
+      if (res.meta.status !== 200) return this.$message.error('更新用户角色失败！')
+      this.$message.success('更新角色成功！')
+      this.getUserList()
+      this.setRoleDialogVisible = false
+    },
+    // 分配角色对话框关闭事件
+    setRoleDialogClosed () {
+      // 将选择在角色id清空
+      this.selectRoleId = ''
+      // 将分配角色时查询的对应用户信息对象清空
+      this.userInfo = {}
     }
   }
 }
