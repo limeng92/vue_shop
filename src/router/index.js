@@ -8,6 +8,7 @@ const Users = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../comp
 const Rights = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/power/Rights.vue')
 const Roles = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/power/Roles.vue')
 const Cate = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/goods/Cate.vue')
+const Params = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '../components/goods/Params.vue')
 Vue.use(VueRouter)
 
 const routes = [
@@ -34,6 +35,9 @@ const routes = [
     }, {
       path: '/categories',
       component: Cate
+    }, {
+      path: '/params',
+      component: Params
     }]
   }
 ]
